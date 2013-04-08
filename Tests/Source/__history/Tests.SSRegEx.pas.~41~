@@ -1,0 +1,123 @@
+﻿unit Tests.SSRegEx;
+
+interface
+
+uses
+  Classes, SysUtils, TestFrameWork, SSRegEx, SSPatternBuilder;
+
+type
+  TSSRegExTests = class(TTestCase)
+  published
+  end;
+
+  TSSPatternBuilderTests = class(TTestCase)
+  public
+    P: TSSPatternBuilder;
+  published
+    procedure TestGroup;
+    procedure TestOptional;
+    procedure TestNegate_with_list;
+    procedure TestNegate_with_values;
+    procedure TestList;
+    procedure TestStartsWith;
+    procedure TestEndsWith;
+    procedure TestRepeatIt_with_min_max;
+    procedure TestRepeatIt_with_n_times;
+    procedure TestRepeatIt_zero_or_more;
+    procedure TestRepeatItAtLeastOne;
+    procedure TestRepeatItUntil;
+    procedure TestRepeatItAtLeast;
+  end;
+
+implementation
+
+uses
+  VCL.Dialogs;
+
+const
+  sTestString    = 'This-is*-my[R-e-g-e-x]^2';
+  sExpectedRegEx = 'This\-is\*\-my\[R\-e\-g\-e\-x\]\^2';
+
+{ TSSPatternBuilderTests }
+
+procedure TSSPatternBuilderTests.TestEndsWith;
+begin
+  CheckEquals('MySimpleRegex$', P.EndsWith('MySimpleRegex'), 'Error on EndsWith [with simple pattern]');
+  CheckEquals(sExpectedRegEx+'$', P.EndsWith(sTestString, False), 'Error on EndsWith [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestGroup;
+begin
+  CheckEquals('(MySimpleRegex)', P.Group('MySimpleRegex'), 'Error on Group [with simple pattern]');
+  CheckEquals('('+sExpectedRegEx+')', P.Group(sTestString, False), 'Error on Group [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestList;
+begin
+  CheckEquals('[AEIOU]', P.List(['A', 'E', 'I', 'O', 'U']), 'Error on List [with simple pattern]');
+  CheckEquals('[\.\\_az]', P.List(['.', '\', '_', 'a', 'z'], False), 'Error on List [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestNegate_with_list;
+begin
+  CheckEquals('[^AEIOU]', P.Negate(['A', 'E', 'I', 'O', 'U']), 'Error on Negate with list [with simple pattern]');
+  CheckEquals('[^\.\\_az]', P.Negate(['.', '\', '_', 'a', 'z'], False), 'Error on Negate with list [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestNegate_with_values;
+begin
+  CheckEquals('[^AEIOU]', P.Negate('[AEIOU]'), 'Error on Negate with values [with simple pattern]');
+  CheckEquals('[^\.\\_az]', P.Negate('[.\_az]', False), 'Error on Negate with values [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestOptional;
+begin
+  CheckEquals('MySimpleRegex?', P.Optional('MySimpleRegex'), 'Error on Optional [with simple pattern]');
+  CheckEquals(sExpectedRegEx+'?', P.Optional(sTestString, False), 'Error on Optional [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestRepeatItAtLeast;
+begin
+  CheckEquals('(A){10,}', P.RepeatItAtLeast('A', 10), 'Error on RepeatItAtLeast [with simple pattern]');
+  CheckEquals('('+sExpectedRegEx+'){10,}', P.RepeatItAtLeast(sTestString, 10, False), 'Error on RepeatItAtLeast [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestRepeatItAtLeastOne;
+begin
+  CheckEquals('(A)+', P.RepeatItAtLeastOne('A'), 'Error on RepeatItAtLeastOne [with simple pattern]');
+  CheckEquals('('+sExpectedRegEx+')+', P.RepeatItAtLeastOne(sTestString, False), 'Error on RepeatItAtLeastOne [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestRepeatItUntil;
+begin
+  CheckEquals('(A){0,3}', P.RepeatItUntil('A', 3), 'Error on RepeatItUntil [with simple pattern]');
+  CheckEquals('('+sExpectedRegEx+'){0,3}', P.RepeatItUntil(sTestString, 3, False), 'Error on RepeatItUntil [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestRepeatIt_with_min_max;
+begin
+  CheckEquals('(A){2,5}', P.RepeatIt('A', 2, 5), 'Error on RepeatIt with range [with simple pattern]');
+  CheckEquals('('+sExpectedRegEx+'){2,5}', P.RepeatIt(sTestString, 2, 5, False), 'Error on RepeatIt with range [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestRepeatIt_with_n_times;
+begin
+
+end;
+
+procedure TSSPatternBuilderTests.TestRepeatIt_zero_or_more;
+begin
+  CheckEquals('(A)*', P.RepeatIt('A'), 'Error on RepeatIt zero or more [with simple pattern]');
+  CheckEquals('('+sExpectedRegEx+')*', P.RepeatIt(sTestString, False), 'Error on RepeatIt zero or more [without pattern]');
+end;
+
+procedure TSSPatternBuilderTests.TestStartsWith;
+begin
+  CheckEquals('^MySimpleRegex', P.StartsWith('MySimpleRegex'), 'Error on StartsWith [with simple pattern]');
+  CheckEquals('^'+sExpectedRegEx, P.StartsWith(sTestString, False), 'Error on StartsWith [without pattern]');
+end;
+
+initialization
+  RegisterTests([TSSRegExTests.Suite,
+                 TSSPatternBuilderTests.Suite]);
+end.

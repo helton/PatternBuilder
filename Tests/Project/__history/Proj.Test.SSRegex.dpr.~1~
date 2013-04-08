@@ -1,0 +1,16 @@
+program Proj.Test.SSRegex;
+
+uses
+  Forms,
+  TestFramework,
+  GUITestRunner,
+  IWInit,
+  IWGlobal,
+  Tests.SSRegEx in '..\Source\Tests.SSRegEx.pas';
+
+{$R *.res}
+
+begin
+  GAppModeInit(Application);
+  TGUITestRunner.runRegisteredTests;
+end.
