@@ -45,9 +45,24 @@ type
 implementation
 
   { Internal functions }
+  function _CheckGroup(aPattern: String): String; forward;
+  function _ExtractContentFromList(aList: String): String; forward;
   function _Group(aPattern: String): String; forward;
   function _RepeatList(aPattern: String; aMin, aMax: Integer): String; forward;
-  function _CheckGroup(aPattern: String): String; forward;
+
+function _CheckGroup(aPattern: String): String;
+begin
+  Result := aPattern;
+  if (aPattern.Length <> 1) and
+     (not ((aPattern.Length = 2) and TRegEx.IsMatch(Result, '^\\.$'))) and
+     (not TRegEx.IsMatch(Result, '^((\[.*\])|(\(.*\)))$')) then
+    Result := _Group(aPattern);
+end;
+
+function _ExtractContentFromList(aList: String): String;
+begin
+  Result := TRegEx.Replace(aList, '^\[(.*)\]$', '\1');
+end;
 
 function _Group(aPattern: String): String;
 begin
@@ -62,15 +77,6 @@ begin
   else
     Result := Result + IfThen(aMin = -1, '', IntToStr(aMin))+','+IfThen(aMax = -1, '', IntToStr(aMax));
   Result := Result + '}';
-end;
-
-function _CheckGroup(aPattern: String): String;
-begin
-  Result := aPattern;
-  if (aPattern.Length <> 1) and
-     (not ((aPattern.Length = 2) and TRegEx.IsMatch(Result, '^\\.$'))) and
-     (not TRegEx.IsMatch(Result, '^((\[.*\])|(\(.*\)))$')) then
-    Result := _Group(aPattern);
 end;
 
 { TSSPatternBuilder }
@@ -90,7 +96,7 @@ var
   CurrentList: String;
 begin
   for CurrentList in aLists do
-    Result := Result + TRegEx.Replace(CurrentList, '^\[(.*)\]$', '\1');
+    Result := Result + _ExtractContentFromList(CurrentList);
   if not Result.IsEmpty then
     Result := '[' + Result + ']';
 end;
@@ -117,7 +123,7 @@ end;
 
 class function TSSPatternBuilder.Negate(aList: String): String;
 begin
-  Result := '[^'+TRegEx.Replace(aList, '^\[(.*)\]$', '\1')+']';
+  Result := '[^'+_ExtractContentFromList(aList)+']';
 end;
 
 class function TSSPatternBuilder.Optional(aPattern: String): String;
